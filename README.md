@@ -1,4 +1,6 @@
-# penne
+[![Build Status](https://travis-ci.com/spaghettifunk/penne.svg?branch=master)](https://travis-ci.com/spaghettifunk/penne)  [![Go Report Card](https://goreportcard.com/badge/github.com/spaghettifunk/penne)](https://goreportcard.com/report/github.com/spaghettifunk/penne)
+
+# Penne
 Penne is a simple C-like programming language. The language has the following features:
 - C-like syntax
 - Variable bindings
