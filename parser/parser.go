@@ -7,11 +7,25 @@ import (
 	"fmt"
 )
 
+const (
+	_ int = iota
+	LOWEST
+	EQUALS       // ==
+	LESSGREATER  // > or <
+	SUM          // +
+	PRODUCT      // *
+	PREFIX       // -X or !x
+	CALL         // myFunction(x)
+)
+
 type Parser struct {
 	l         *lexer.Lexer
 	curToken  token.Token
 	peekToken token.Token
 	errors    []string
+
+	prefixParseFns map[token.TokenType]prefixParseFunc
+	infixParseFns  map[token.TokenType]infixParseFunc
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -59,7 +73,7 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
-		return nil
+		return p.parseExpressionStatement()
 	}
 }
 
@@ -98,6 +112,28 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	return stmt
 }
 
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+
+	stmt := &ast.ExpressionStatement{Token: p.curToken}
+	stmt.Expression = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
+}
+
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParseFns[p.curToken.Type]
+	if prefix == nil {
+		return nil
+	}
+
+	leftExp := prefix()
+	return leftExp
+}
+
 func (p *Parser) curTokenIs(t token.TokenType) bool {
 	return p.curToken.Type == t
 }
@@ -119,4 +155,17 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 func (p *Parser) peekError(t token.TokenType) {
 	msg := fmt.Sprintf("expected next token be %s, got %s instead.", t, p.peekToken.Type)
 	p.errors = append(p.errors, msg)
+}
+
+type (
+	prefixParseFunc func() ast.Expression
+	infixParseFunc func(e ast.Expression) ast.Expression
+)
+
+func (p *Parser) registerPrefix(tt token.TokenType, fn prefixParseFunc) {
+	p.prefixParseFns[tt] = fn
+}
+
+func (p *Parser) registerInfix(tt token.TokenType, fn infixParseFunc) {
+	p.infixParseFns[tt] = fn
 }
