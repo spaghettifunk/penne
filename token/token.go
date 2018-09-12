@@ -1,7 +1,6 @@
-// token/token.go
 package token
 
-type TokenType string
+type TokenType string // string is easier to debug but less performant than byte/int
 
 type Token struct {
 	Type    TokenType
@@ -12,9 +11,10 @@ const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
 
-	// Identifiers + literals
-	IDENT = "IDENT" // add, foobar, x, y, ...
-	INT   = "INT"   // 12345
+	// Identifiers + Literals
+	IDENT  = "IDENT" // add, foobar, x, y, etc.
+	INT    = "INT"   // 1234..
+	STRING = "STRING"
 
 	// Operators
 	ASSIGN   = "="
@@ -23,19 +23,21 @@ const (
 	BANG     = "!"
 	ASTERISK = "*"
 	SLASH    = "/"
-
-	LT     = "<"
-	GT     = ">"
-	EQ     = "=="
-	NOT_EQ = "!="
+	LT       = "<"
+	GT       = ">"
+	EQ       = "=="
+	NOT_EQ   = "!="
 
 	// Delimiters
 	COMMA     = ","
 	SEMICOLON = ";"
+	COLON     = ":"
 	LPAREN    = "("
 	RPAREN    = ")"
 	LBRACE    = "{"
 	RBRACE    = "}"
+	LBRACKET  = "["
+	RBRACKET  = "]"
 
 	// Keywords
 	FUNCTION = "FUNCTION"
@@ -48,7 +50,7 @@ const (
 )
 
 var keywords = map[string]TokenType{
-	"func":   FUNCTION,
+	"fn":     FUNCTION,
 	"let":    LET,
 	"true":   TRUE,
 	"false":  FALSE,
@@ -57,7 +59,6 @@ var keywords = map[string]TokenType{
 	"return": RETURN,
 }
 
-// LookupIdent checks the keywords table to see if the word is indeed a keyword
 func LookupIdent(ident string) TokenType {
 	if tok, ok := keywords[ident]; ok {
 		return tok
